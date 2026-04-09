@@ -7,8 +7,6 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-const NEXT_PUBLIC_LOGIN_URL =
-  process.env.NEXT_PUBLIC_LOGIN_URL ?? "https://www.hdruk.ac.uk/";
 const applicationMode = process.env.APPLICATION_MODE;
 
 export default function Custom403() {
@@ -17,7 +15,7 @@ export default function Custom403() {
 
   const loginRedirect = isStandalone(applicationMode)
     ? "/sign-in"
-    : NEXT_PUBLIC_LOGIN_URL;
+    : "/api/auth/login?returnTo=/";
 
   const getContent = (): { messages: string[]; redirectUrl: string } => {
     switch (reason) {
@@ -75,7 +73,7 @@ export default function Custom403() {
           ],
           redirectUrl: isStandalone(applicationMode)
             ? "/"
-            : NEXT_PUBLIC_LOGIN_URL,
+            : "/api/auth/login?returnTo=/",
         };
     }
   };

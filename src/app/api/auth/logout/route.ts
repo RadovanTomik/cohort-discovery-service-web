@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ACCESS_TOKEN_NAME } from "@/config/internals";
+import { ACCESS_TOKEN_NAME, IS_OIDC_ENABLED } from "@/config/internals";
 
 export async function GET(req: NextRequest) {
+  if (IS_OIDC_ENABLED) {
+    const callbackUrl = new URL("/login", req.nextUrl.origin).toString();
+    const signoutUrl = new URL("/api/auth/signout", req.nextUrl.origin);
+    signoutUrl.searchParams.set("callbackUrl", callbackUrl);
+    return NextResponse.redirect(signoutUrl);
+  }
+
   const url = new URL("/login", req.url);
   const response = NextResponse.redirect(url);
   // Delete via multiple strategies to handle domain-scoped cookies set by

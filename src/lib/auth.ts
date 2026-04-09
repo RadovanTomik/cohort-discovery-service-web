@@ -1,28 +1,51 @@
 import { cookies } from "next/headers";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ACCESS_TOKEN_NAME } from "@/config/internals";
+import { ACCESS_TOKEN_NAME, IS_OIDC_ENABLED } from "@/config/internals";
 import { TokenUser } from "@/types/api";
 import { redirect } from "next/navigation";
-import { isStandalone } from "@/utils/modes";
+import { getAuthSession } from "./nextAuth";
 
-const applicationMode = process.env.APPLICATION_MODE;
+const decodeTokenPayload = (token?: string) => {
+  if (!token) return undefined;
+  try {
+    return jwt.decode(token) as JwtPayload | null;
+  } catch {
+    return undefined;
+  }
+};
 
-export async function getTokenUser(): Promise<{
-  user: TokenUser;
-}> {
+export const getLoginRoute = (returnTo = "/") => {
+  if (IS_OIDC_ENABLED) {
+    return `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+  }
+  return "/login";
+};
+
+export async function getUserAuthTagId(): Promise<string | number> {
   const cookieStore = await cookies();
   const token = cookieStore.get(ACCESS_TOKEN_NAME)?.value;
+  const decoded = decodeTokenPayload(token);
 
-  const decoded = token ? (jwt.decode(token) as JwtPayload) : undefined;
-
-  const user = decoded?.user as TokenUser;
-  if (!user) {
-    if (isStandalone(applicationMode)) {
-      redirect("/login");
-    } else {
-      redirect("/user-not-found");
+  if (decoded?.user && typeof decoded.user === "object") {
+    const user = decoded.user as Partial<TokenUser>;
+    if (typeof user.id === "number") {
+      return user.id;
     }
   }
 
-  return { user };
+  if (decoded?.sub) {
+    return decoded.sub;
+  }
+
+  const session = await getAuthSession();
+  if (session?.user?.email) {
+    return session.user.email;
+  }
+
+  if (!token && !session) {
+    redirect(getLoginRoute());
+  }
+
+  return "auth-user";
 }
+

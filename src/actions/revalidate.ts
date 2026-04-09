@@ -11,7 +11,7 @@ import {
   TAG_CUSTODIANS,
   TAG_NETWORKS,
 } from "@/config/tags";
-import { getTokenUser } from "@/lib/auth";
+import { getUserAuthTagId } from "@/lib/auth";
 import { Custodian } from "@/types/api";
 import { updateTag } from "next/cache";
 
@@ -20,8 +20,7 @@ export const revalidateAction = async (tagName: string) => {
 };
 
 export const revalidateUserAction = async (tagName: string) => {
-  const { user } = await getTokenUser();
-  const userId = user.id;
+  const userId = await getUserAuthTagId();
   await revalidateAction(`${tagName}-${userId}`);
 };
 

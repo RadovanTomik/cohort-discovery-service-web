@@ -7,8 +7,6 @@ import StandaloneLoginForm from "./StandaloneLoginForm";
 import Circles from "./Circles";
 import { useApplicationMode } from "@/providers/ApplicationModeProvider";
 
-const REDIRECT_URL = process?.env?.NEXT_PUBLIC_LOGIN_URL;
-
 const LoginClient = () => {
   const { isStandalone } = useApplicationMode();
   const router = useRouter();
@@ -16,7 +14,7 @@ const LoginClient = () => {
 
   const onClick = () => {
     if (!isStandalone) {
-      router.push(REDIRECT_URL || "");
+      router.push("/api/auth/login?returnTo=/");
       return;
     }
     setShowForm(true);

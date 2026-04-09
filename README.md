@@ -39,10 +39,23 @@ Use `.env.example` as the base:
 | Variable | Required | Description |
 | --- | --- | --- |
 | `API_BASE_URL` | Yes | Backend API base URL used by server actions. |
-| `NEXT_PUBLIC_LOGIN_URL` | Yes | Login URL used by the app when unauthenticated. |
+| `NEXT_PUBLIC_LOGIN_URL` | Legacy only | External login URL used when `AUTH_PROVIDER=legacy`. |
 | `APPLICATION_MODE` | Yes | `integrated` or `standalone`. Controls auth/access behavior. |
+| `AUTH_PROVIDER` | No | `legacy` (default) or `oidc`. Enables Auth.js OIDC flow in integrated mode. |
+| `NEXTAUTH_SECRET` | OIDC only | Secret used to sign/encrypt Auth.js session cookies. |
+| `NEXTAUTH_URL` | OIDC only | Public app URL used by Auth.js callback validation (recommended outside local dev). |
+| `OIDC_ISSUER_URL` | OIDC only | OIDC issuer base URL (used for discovery via `/.well-known/openid-configuration`). |
+| `OIDC_CLIENT_ID` | OIDC only | OIDC client id for this UI app. |
+| `OIDC_CLIENT_SECRET` | OIDC only | OIDC client secret for confidential clients. |
+| `OIDC_SCOPE` | OIDC only | OAuth scopes requested by Auth.js (default: `openid profile email`). |
 | `NEXT_PUBLIC_USE_EXAMPLE_QUERY` | No | Enables example query UX/debug helpers when `true`. |
 | `NEXT_PUBLIC_USE_DEBUG_LOGS` | No | Enables extra client-side debug logging when `true`. |
+
+### Auth Flow Notes
+
+- Integrated sign-in uses `/api/auth/login`, which routes to either legacy login URL or Auth.js OIDC based on `AUTH_PROVIDER`.
+- With `AUTH_PROVIDER=oidc`, Auth.js (`next-auth`) manages authorization-code + PKCE flow and callback handling.
+- Backend API calls use bearer tokens from the existing token cookie first, with Auth.js session token fallback for OIDC.
 
 ## Available Scripts
 
@@ -81,6 +94,6 @@ npm run test
 
 ## Troubleshooting
 
-- If auth redirects fail, verify `NEXT_PUBLIC_LOGIN_URL`.
+- If auth redirects fail, verify `AUTH_PROVIDER`, OIDC settings, and `NEXTAUTH_SECRET`.
 - If queries fail to load, verify `API_BASE_URL` and that the API is reachable.
 - If mode-specific routes behave unexpectedly, check `APPLICATION_MODE` is set correctly.

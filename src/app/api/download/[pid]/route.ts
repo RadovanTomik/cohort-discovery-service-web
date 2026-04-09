@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { ACCESS_TOKEN_NAME } from "@/config/internals";
+import { getAuthAccessToken } from "@/lib/nextAuth";
 const baseURL = process.env.API_BASE_URL!;
 
 export async function GET(
@@ -12,7 +13,8 @@ export async function GET(
   const entity = urlObj.searchParams.get("entity") ?? "queries";
 
   const cookieStore = await cookies();
-  const token = cookieStore.get(ACCESS_TOKEN_NAME)?.value;
+  const token =
+    cookieStore.get(ACCESS_TOKEN_NAME)?.value ?? (await getAuthAccessToken());
 
   const backendUrl = `${baseURL}/api/v1/${entity}/${pid}/download/${format}`;
 

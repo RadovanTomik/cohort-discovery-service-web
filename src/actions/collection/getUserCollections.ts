@@ -1,6 +1,6 @@
 "use server";
 
-import { getTokenUser } from "@/lib/auth";
+import { getUserAuthTagId } from "@/lib/auth";
 import { apiGet, CachedGetArgs } from "@/lib/apiClient";
 import { API_ROUTES } from "@/lib/apiRoutes";
 import { Collection, ApiResponse } from "@/types/api";
@@ -9,9 +9,7 @@ import { getTagsUserCollections, TAG_COLLECTIONS } from "@/config/tags";
 const getUserCollections = async (
   args?: Omit<CachedGetArgs, "url">,
 ): Promise<ApiResponse<Collection[]>> => {
-  const {
-    user: { id: userId },
-  } = await getTokenUser();
+  const userId = await getUserAuthTagId();
 
   return await apiGet<ApiResponse<Collection[]>>({
     url: API_ROUTES.userCollections,

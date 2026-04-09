@@ -4,14 +4,12 @@ import { getUserQueryTag, TAG_QUERIES } from "@/config/tags";
 import { apiGet, CachedGetArgs } from "@/lib/apiClient";
 import { API_ROUTES } from "@/lib/apiRoutes";
 import { Query, ApiResponse, Paginated, WithIncomplete } from "@/types/api";
-import { getTokenUser } from "@/lib/auth";
+import { getUserAuthTagId } from "@/lib/auth";
 
 const getQueries = async (
   args?: Omit<CachedGetArgs, "url">,
 ): Promise<WithIncomplete<ApiResponse<Paginated<Query>>>> => {
-  const {
-    user: { id: userId },
-  } = await getTokenUser();
+  const userId = await getUserAuthTagId();
 
   const { data, message } = await apiGet<ApiResponse<Paginated<Query>>>({
     url: API_ROUTES.queries,

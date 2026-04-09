@@ -5,9 +5,10 @@ import { cookies } from "next/headers";
 import { ApiError } from "./https";
 import { notFound, redirect } from "next/navigation";
 import { DEFAULT_REVALIDATE } from "@/config/defaults";
-import { getTokenUser } from "./auth";
+import { getUserAuthTagId } from "./auth";
 import { CacheOptions } from "@/types/api";
 import { paramsToString } from "@/utils/string";
+import { getAuthAccessToken } from "./nextAuth";
 
 const baseURL = process.env.API_BASE_URL ?? "http://localhost:8100";
 const isCypress = process.env.CYPRESS === "true";
@@ -50,9 +51,7 @@ const buildCachedRequest = async ({
   const queryString = paramsToString(params);
   const finalUrl = queryString ? `${url}?${queryString}` : url;
 
-  const {
-    user: { id: userId },
-  } = await getTokenUser();
+  const userId = await getUserAuthTagId();
 
   const queryTags =
     queryString && tags ? tags.map((t) => `${t}-${queryString}`) : [];
@@ -88,7 +87,8 @@ async function request<TResponse, TBody = undefined>(
   } = options;
 
   const cookieStore = await cookies();
-  const token = cookieStore.get(ACCESS_TOKEN_NAME)?.value;
+  const token =
+    cookieStore.get(ACCESS_TOKEN_NAME)?.value ?? (await getAuthAccessToken());
 
   try {
     const response = await fetch(fullUrl, {
