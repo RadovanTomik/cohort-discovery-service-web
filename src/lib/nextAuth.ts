@@ -3,15 +3,18 @@ import type { Session } from "next-auth";
 import { IS_OIDC_ENABLED } from "@/config/internals";
 
 const issuer = process.env.OIDC_ISSUER_URL?.replace(/\/$/, "");
+const oidcClientId = process.env.OIDC_CLIENT_ID;
+const oidcClientSecret = process.env.OIDC_CLIENT_SECRET;
 
-const oidcProvider = issuer
+const oidcProvider: NextAuthOptions["providers"][number] | null =
+  issuer && oidcClientId && oidcClientSecret
   ? {
       id: "oidc",
       name: "OIDC",
       type: "oauth",
       wellKnown: `${issuer}/.well-known/openid-configuration`,
-      clientId: process.env.OIDC_CLIENT_ID,
-      clientSecret: process.env.OIDC_CLIENT_SECRET,
+      clientId: oidcClientId,
+      clientSecret: oidcClientSecret,
       idToken: true,
       checks: ["pkce", "state"],
       authorization: {
